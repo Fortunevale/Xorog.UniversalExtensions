@@ -6,4 +6,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <None Remove="UniversalExtensions.cs~RF2ac278e.TMP" />
+  </ItemGroup>
+
 </Project>

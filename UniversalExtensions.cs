@@ -1,24 +1,68 @@
-﻿using System.Diagnostics;
-using System.Net;
-using System.Security.Cryptography;
-
-namespace Xorog.UniversalExtensions;
+﻿namespace Xorog.UniversalExtensions;
 
 public static class UniversalExtensions
 {
+    /// <summary>
+    /// Get the current CPU Usage on all plattforms
+    /// </summary>
+    /// <returns></returns>
+    public static async Task<double> GetCpuUsageForProcess()
+    {
+        var startTime = DateTime.UtcNow;
+        var startCpuUsage = Process.GetCurrentProcess().TotalProcessorTime;
+        await Task.Delay(500);
+
+        var endTime = DateTime.UtcNow;
+        var endCpuUsage = Process.GetCurrentProcess().TotalProcessorTime;
+        var cpuUsedMs = (endCpuUsage - startCpuUsage).TotalMilliseconds;
+        var totalMsPassed = (endTime - startTime).TotalMilliseconds;
+        var cpuUsageTotal = cpuUsedMs / (Environment.ProcessorCount * totalMsPassed);
+        return cpuUsageTotal * 100;
+    }
+
+
 
     /// <summary>
-    /// Remove unsupported characters from string to generate a valid filename
+    /// Copy a directory recursively
     /// </summary>
-    /// <param name="name">The string with potentionally unwanted characters</param>
-    /// <param name="replace_char">The character the unwanted characters get replaced with (default: <code>_</code>)</param>
-    /// <returns>A valid filename</returns>
-    public static string MakeValidFileName(this string name, char replace_char = '_')
+    /// <param name="sourceDirName"></param>
+    /// <param name="destDirName"></param>
+    /// <param name="copySubDirs"></param>
+    /// <exception cref="DirectoryNotFoundException"></exception>
+    public static void DirectoryCopy(string sourceDirName, string destDirName, bool copySubDirs)
     {
-        string invalidChars = System.Text.RegularExpressions.Regex.Escape(new string(System.IO.Path.GetInvalidFileNameChars()));
-        string invalidRegStr = string.Format(@"([{0}]*\.+$)|([{0}]+)", invalidChars);
+        // Get the subdirectories for the specified directory.
+        DirectoryInfo dir = new(sourceDirName);
 
-        return System.Text.RegularExpressions.Regex.Replace(name, invalidRegStr, replace_char.ToString()).Replace('&', replace_char);
+        if (!dir.Exists)
+        {
+            throw new DirectoryNotFoundException(
+                "Source directory does not exist or could not be found: "
+                + sourceDirName);
+        }
+
+        DirectoryInfo[] dirs = dir.GetDirectories();
+
+        // If the destination directory doesn't exist, create it.
+        Directory.CreateDirectory(destDirName);
+
+        // Get the files in the directory and copy them to the new location.
+        FileInfo[] files = dir.GetFiles();
+        foreach (FileInfo file in files)
+        {
+            string tempPath = Path.Combine(destDirName, file.Name);
+            file.CopyTo(tempPath, false);
+        }
+
+        // If copying subdirectories, copy them and their contents to new location.
+        if (copySubDirs)
+        {
+            foreach (DirectoryInfo subdir in dirs)
+            {
+                string tempPath = Path.Combine(destDirName, subdir.Name);
+                DirectoryCopy(subdir.FullName, tempPath, copySubDirs);
+            }
+        }
     }
 
 
@@ -125,6 +169,22 @@ public static class UniversalExtensions
 
 
     /// <summary>
+    /// Remove unsupported characters from string to generate a valid filename
+    /// </summary>
+    /// <param name="name">The string with potentionally unwanted characters</param>
+    /// <param name="replace_char">The character the unwanted characters get replaced with (default: <code>_</code>)</param>
+    /// <returns>A valid filename</returns>
+    public static string MakeValidFileName(this string name, char replace_char = '_')
+    {
+        string invalidChars = System.Text.RegularExpressions.Regex.Escape(new string(System.IO.Path.GetInvalidFileNameChars()));
+        string invalidRegStr = string.Format(@"([{0}]*\.+$)|([{0}]+)", invalidChars);
+
+        return System.Text.RegularExpressions.Regex.Replace(name, invalidRegStr, replace_char.ToString()).Replace('&', replace_char);
+    }
+
+
+
+    /// <summary>
     /// Compute the SHA256-Hash for a given file
     /// </summary>
     /// <param name="filePath"></param>
@@ -147,6 +207,7 @@ public static class UniversalExtensions
     /// <returns></returns>
     public static TimeSpan GetTimespanUntil(this DateTime until) =>
     (until.ToUniversalTime() - DateTime.UtcNow);
+
 
 
     /// <summary>
@@ -262,83 +323,6 @@ public static class UniversalExtensions
 
 
 
-    private static string GetShortTimeFormat(this TimeSpan _timespan, TimeFormat timeFormat)
-    {
-        switch (timeFormat)
-        {
-            case TimeFormat.HOURS:
-                if (_timespan.TotalDays >= 1)
-                    return $"{(Math.Floor(_timespan.TotalHours).ToString().Length == 1 ? $"0{Math.Floor(_timespan.TotalHours)}" : Math.Floor(_timespan.TotalHours))}:" +
-                        $"{(_timespan.Minutes.ToString().Length == 1 ? $"0{_timespan.Minutes}" : _timespan.Minutes)}:" +
-                        $"{(_timespan.Seconds.ToString().Length == 1 ? $"0{_timespan.Seconds}" : _timespan.Seconds)}";
-
-                if (_timespan.TotalHours >= 1)
-                    return $"{(_timespan.Hours.ToString().Length == 1 ? $"0{_timespan.Hours}" : _timespan.Hours)}:" +
-                        $"{(_timespan.Minutes.ToString().Length == 1 ? $"0{_timespan.Minutes}" : _timespan.Minutes)}:" +
-                        $"{(_timespan.Seconds.ToString().Length == 1 ? $"0{_timespan.Seconds}" : _timespan.Seconds)}";
-
-                return $"{(_timespan.Minutes.ToString().Length == 1 ? $"0{_timespan.Minutes}" : _timespan.Minutes)}:" +
-                       $"{(_timespan.Seconds.ToString().Length == 1 ? $"0{_timespan.Seconds}" : _timespan.Seconds)}";
-            case TimeFormat.DAYS:
-                if (_timespan.TotalDays >= 1)
-                    return $"{(Math.Floor(_timespan.TotalDays).ToString().Length == 1 ? $"0{Math.Floor(_timespan.TotalDays)}" : Math.Floor(_timespan.TotalDays))}" +
-                            $"{(_timespan.Hours.ToString().Length == 1 ? $"0{_timespan.Hours}" : _timespan.Hours)}:" +
-                            $"{(_timespan.Minutes.ToString().Length == 1 ? $"0{_timespan.Minutes}" : _timespan.Minutes)}:" +
-                            $"{(_timespan.Seconds.ToString().Length == 1 ? $"0{_timespan.Seconds}" : _timespan.Seconds)}";
-
-                if (_timespan.TotalHours >= 1)
-                    return $"{(Math.Floor(_timespan.TotalHours).ToString().Length == 1 ? $"0{Math.Floor(_timespan.TotalHours)}" : Math.Floor(_timespan.TotalHours))}:" +
-                            $"{(_timespan.Minutes.ToString().Length == 1 ? $"0{_timespan.Minutes}" : _timespan.Minutes)}:" +
-                            $"{(_timespan.Seconds.ToString().Length == 1 ? $"0{_timespan.Seconds}" : _timespan.Seconds)}";
-
-                return $"{(_timespan.Minutes.ToString().Length == 1 ? $"0{_timespan.Minutes}" : _timespan.Minutes)}:" +
-                       $"{(_timespan.Seconds.ToString().Length == 1 ? $"0{_timespan.Seconds}" : _timespan.Seconds)}";
-
-            case TimeFormat.MINUTES:
-                if (_timespan.TotalHours >= 1)
-                    return $"{(Math.Floor(_timespan.TotalMinutes).ToString().Length == 1 ? $"0{Math.Floor(_timespan.TotalMinutes)}" : Math.Floor(_timespan.TotalMinutes))}:" +
-                            $"{(_timespan.Seconds.ToString().Length == 1 ? $"0{_timespan.Seconds}" : _timespan.Seconds)}";
-
-                return $"{(_timespan.Minutes.ToString().Length == 1 ? $"0{_timespan.Minutes}" : _timespan.Minutes)}:" +
-                       $"{(_timespan.Seconds.ToString().Length == 1 ? $"0{_timespan.Seconds}" : _timespan.Seconds)}";
-
-            default:
-                return _timespan.ToString();
-        }
-    }
-    private static string GetTimeFormat(this TimeSpan _timespan, TimeFormat timeFormat)
-    {
-        switch (timeFormat)
-        {
-            case TimeFormat.HOURS:
-                if (_timespan.TotalDays >= 1)
-                    return $"{Math.Floor(_timespan.TotalHours)} hours, {_timespan.Minutes} minutes";
-
-                if (_timespan.TotalHours >= 1)
-                    return $"{_timespan.Hours} hours, {_timespan.Minutes} minutes";
-
-                return $"{_timespan.Minutes} minutes, {_timespan.Seconds} seconds";
-            case TimeFormat.DAYS:
-                if (_timespan.TotalDays >= 1)
-                    return $"{Math.Floor(_timespan.TotalDays)} days, {_timespan.Hours} hours";
-
-                if (_timespan.TotalHours >= 1)
-                    return $"{_timespan.Hours} hours, {_timespan.Minutes} minutes";
-
-                return $"{_timespan.Minutes} minutes, {_timespan.Seconds} seconds";
-
-            case TimeFormat.MINUTES:
-                if (_timespan.TotalHours >= 1)
-                    return $"{Math.Floor(_timespan.TotalMinutes)} minutes, {_timespan.Seconds} seconds";
-                return $"{_timespan.Minutes} minutes, {_timespan.Seconds} seconds";
-
-            default:
-                return _timespan.ToString();
-        }
-    }
-
-
-
     /// <summary>
     /// Check if a string contains only digits
     /// </summary>
@@ -364,78 +348,6 @@ public static class UniversalExtensions
     /// <returns></returns>
     public static string GetAllDigits(this string str) =>
         new String(str.Where(Char.IsDigit).ToArray());
-
-    public enum TimeFormat
-    {
-        MINUTES,
-        HOURS,
-        DAYS
-    }
-
-
-
-    /// <summary>
-    /// Get the current CPU Usage on all plattforms
-    /// </summary>
-    /// <returns></returns>
-    public static async Task<double> GetCpuUsageForProcess()
-    {
-        var startTime = DateTime.UtcNow;
-        var startCpuUsage = Process.GetCurrentProcess().TotalProcessorTime;
-        await Task.Delay(500);
-
-        var endTime = DateTime.UtcNow;
-        var endCpuUsage = Process.GetCurrentProcess().TotalProcessorTime;
-        var cpuUsedMs = (endCpuUsage - startCpuUsage).TotalMilliseconds;
-        var totalMsPassed = (endTime - startTime).TotalMilliseconds;
-        var cpuUsageTotal = cpuUsedMs / (Environment.ProcessorCount * totalMsPassed);
-        return cpuUsageTotal * 100;
-    }
-
-
-
-    /// <summary>
-    /// Copy a directory recursively
-    /// </summary>
-    /// <param name="sourceDirName"></param>
-    /// <param name="destDirName"></param>
-    /// <param name="copySubDirs"></param>
-    /// <exception cref="DirectoryNotFoundException"></exception>
-    public static void DirectoryCopy(string sourceDirName, string destDirName, bool copySubDirs)
-    {
-        // Get the subdirectories for the specified directory.
-        DirectoryInfo dir = new(sourceDirName);
-
-        if (!dir.Exists)
-        {
-            throw new DirectoryNotFoundException(
-                "Source directory does not exist or could not be found: "
-                + sourceDirName);
-        }
-
-        DirectoryInfo[] dirs = dir.GetDirectories();
-
-        // If the destination directory doesn't exist, create it.
-        Directory.CreateDirectory(destDirName);
-
-        // Get the files in the directory and copy them to the new location.
-        FileInfo[] files = dir.GetFiles();
-        foreach (FileInfo file in files)
-        {
-            string tempPath = Path.Combine(destDirName, file.Name);
-            file.CopyTo(tempPath, false);
-        }
-
-        // If copying subdirectories, copy them and their contents to new location.
-        if (copySubDirs)
-        {
-            foreach (DirectoryInfo subdir in dirs)
-            {
-                string tempPath = Path.Combine(destDirName, subdir.Name);
-                DirectoryCopy(subdir.FullName, tempPath, copySubDirs);
-            }
-        }
-    }
 }
 
 public static class StringExt
