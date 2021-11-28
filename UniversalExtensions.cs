@@ -169,27 +169,11 @@ public static class UniversalExtensions
 
 
     /// <summary>
-    /// Remove unsupported characters from string to generate a valid filename
-    /// </summary>
-    /// <param name="name">The string with potentionally unwanted characters</param>
-    /// <param name="replace_char">The character the unwanted characters get replaced with (default: <code>_</code>)</param>
-    /// <returns>A valid filename</returns>
-    public static string MakeValidFileName(this string name, char replace_char = '_')
-    {
-        string invalidChars = System.Text.RegularExpressions.Regex.Escape(new string(System.IO.Path.GetInvalidFileNameChars()));
-        string invalidRegStr = string.Format(@"([{0}]*\.+$)|([{0}]+)", invalidChars);
-
-        return System.Text.RegularExpressions.Regex.Replace(name, invalidRegStr, replace_char.ToString()).Replace('&', replace_char);
-    }
-
-
-
-    /// <summary>
     /// Compute the SHA256-Hash for a given file
     /// </summary>
     /// <param name="filePath"></param>
     /// <returns></returns>
-    public static string ComputeSHA256Hash(this string filePath)
+    public static string ComputeSHA256Hash(string filePath)
     {
         using (SHA256 _SHA256 = SHA256.Create())
         {
@@ -378,5 +362,36 @@ public static class StringExt
             return value;
 
         return value.Length <= maxLength ? value : $"{value.Substring(0, maxLength)}..";
+    }
+
+
+
+    /// <summary>
+    /// Remove unsupported characters from string to generate a valid filename
+    /// </summary>
+    /// <param name="name">The string with potentionally unwanted characters</param>
+    /// <param name="replace_char">The character the unwanted characters get replaced with (default: <code>_</code>)</param>
+    /// <returns>A valid filename</returns>
+    public static string MakeValidFileName(this string name, char replace_char = '_')
+    {
+        string invalidChars = System.Text.RegularExpressions.Regex.Escape(new string(System.IO.Path.GetInvalidFileNameChars()));
+        string invalidRegStr = string.Format(@"([{0}]*\.+$)|([{0}]+)", invalidChars);
+
+        return System.Text.RegularExpressions.Regex.Replace(name, invalidRegStr, replace_char.ToString()).Replace('&', replace_char);
+    }
+
+
+
+    /// <summary>
+    /// Compute the SHA256-Hash for the given string
+    /// </summary>
+    /// <param name="filePath"></param>
+    /// <returns></returns>
+    public static string ComputeSHA256Hash(string str)
+    {
+        using (SHA256 _SHA256 = SHA256.Create())
+        {
+            return BitConverter.ToString(_SHA256.ComputeHash(Encoding.ASCII.GetBytes(str))).Replace("-", "").ToLowerInvariant();
+        }
     }
 }
