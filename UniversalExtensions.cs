@@ -106,15 +106,15 @@ public static class UniversalExtensions
     /// <returns>The URL the redirect leads to</returns>
     public static async Task<string> UnshortenUrl(string url)
     {
-        HttpClient client = new HttpClient(new HttpClientHandler() { AllowAutoRedirect = false });
+        HttpClient client = new(new HttpClientHandler() { AllowAutoRedirect = false });
         var request = await client.GetAsync(url);
 
-        if (request.StatusCode != HttpStatusCode.Found ||
-            request.StatusCode != HttpStatusCode.Redirect ||
-            request.StatusCode != HttpStatusCode.RedirectKeepVerb ||
-            request.StatusCode != HttpStatusCode.RedirectMethod ||
-            request.StatusCode != HttpStatusCode.PermanentRedirect ||
-            request.StatusCode != HttpStatusCode.TemporaryRedirect)
+        if (request.StatusCode is HttpStatusCode.Found 
+            or HttpStatusCode.Redirect 
+            or HttpStatusCode.RedirectKeepVerb
+            or HttpStatusCode.RedirectMethod
+            or HttpStatusCode.PermanentRedirect
+            or HttpStatusCode.TemporaryRedirect)
         {
             if (request.Headers is not null && request.Headers.Location is not null)
                 return await UnshortenUrl(request.Headers.Location.AbsoluteUri);
@@ -175,11 +175,9 @@ public static class UniversalExtensions
     /// <returns></returns>
     public static string ComputeSHA256Hash(string filePath)
     {
-        using (SHA256 _SHA256 = SHA256.Create())
-        {
-            using (FileStream fileStream = File.OpenRead(filePath))
-                return BitConverter.ToString(_SHA256.ComputeHash(fileStream)).Replace("-", "").ToLowerInvariant();
-        }
+        using SHA256 _SHA256 = SHA256.Create();
+        using FileStream fileStream = File.OpenRead(filePath);
+        return BitConverter.ToString(_SHA256.ComputeHash(fileStream)).Replace("-", "").ToLowerInvariant();
     }
 
 
@@ -316,7 +314,7 @@ public static class UniversalExtensions
     {
         foreach (char c in str)
         {
-            if (c < '0' || c > '9')
+            if (c is < '0' or > '9')
                 return false;
         }
 
@@ -331,7 +329,7 @@ public static class UniversalExtensions
     /// <param name="str"></param>
     /// <returns></returns>
     public static string GetAllDigits(this string str) =>
-        new String(str.Where(Char.IsDigit).ToArray());
+        new(str.Where(Char.IsDigit).ToArray());
 }
 
 public static class StringExt
@@ -345,7 +343,7 @@ public static class StringExt
     public static string Truncate(this string value, int maxLength)
     {
         if (string.IsNullOrEmpty(value)) return value;
-        return value.Length <= maxLength ? value : value.Substring(0, maxLength);
+        return value.Length <= maxLength ? value : value[ ..maxLength ];
     }
 
 
@@ -361,7 +359,7 @@ public static class StringExt
         if (string.IsNullOrEmpty(value)) 
             return value;
 
-        return value.Length <= maxLength ? value : $"{value.Substring(0, maxLength)}..";
+        return value.Length <= maxLength ? value : $"{value[ ..maxLength ]}..";
     }
 
 
@@ -389,9 +387,7 @@ public static class StringExt
     /// <returns></returns>
     public static string ComputeSHA256Hash(string str)
     {
-        using (SHA256 _SHA256 = SHA256.Create())
-        {
-            return BitConverter.ToString(_SHA256.ComputeHash(Encoding.ASCII.GetBytes(str))).Replace("-", "").ToLowerInvariant();
-        }
+        using SHA256 _SHA256 = SHA256.Create();
+        return BitConverter.ToString(_SHA256.ComputeHash(Encoding.ASCII.GetBytes(str))).Replace("-", "").ToLowerInvariant();
     }
 }
