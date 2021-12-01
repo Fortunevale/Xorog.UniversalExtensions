@@ -179,7 +179,10 @@ public static class UniversalExtensions
         string UID = Guid.NewGuid().ToString();
         CancellationTokenSource CancellationToken = new CancellationTokenSource();
 
-        _ = Task.Delay(runTime.GetTimespanUntil().Milliseconds, CancellationToken.Token).ContinueWith(x =>
+        if ((int)Math.Ceiling(runTime.GetTimespanUntil().TotalMilliseconds) < 0)
+            runTime = DateTime.UtcNow.AddSeconds(1);
+
+        _ = Task.Delay((int)Math.Ceiling(runTime.GetTimespanUntil().TotalMilliseconds), CancellationToken.Token).ContinueWith(x =>
         {
             if (registeredScheduledTasks.ContainsKey(UID))
                 registeredScheduledTasks.Remove(UID);
@@ -218,9 +221,9 @@ public static class UniversalExtensions
     /// Gets a list of all registered tasks
     /// </summary>
     /// <returns>A list of all registered tasks</returns>
-    public static IReadOnlyDictionary<string, taskInfo>? GetSheduleTasks()
+    public static List<KeyValuePair<string, taskInfo>>? GetSheduleTasks()
     {
-        return registeredScheduledTasks.ToList() as IReadOnlyDictionary<string, taskInfo>;
+        return registeredScheduledTasks.ToList();
     }
 
 
