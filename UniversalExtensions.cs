@@ -181,6 +181,9 @@ public static class UniversalExtensions
 
         _ = Task.Delay(runTime.GetTimespanUntil().Milliseconds, CancellationToken.Token).ContinueWith(x =>
         {
+            if (registeredScheduledTasks.ContainsKey(UID))
+                registeredScheduledTasks.Remove(UID);
+
             if (x.IsCompletedSuccessfully)
                 task.Start();
         });
