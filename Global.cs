@@ -9,3 +9,4 @@ global using System.Threading.Tasks;
 
 global using static Xorog.UniversalExtensions.UniversalExtensionsEnums;
 global using static Xorog.UniversalExtensions.Internal;
+global using static Xorog.UniversalExtensions.InternalSheduler;

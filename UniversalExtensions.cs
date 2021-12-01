@@ -169,6 +169,76 @@ public static class UniversalExtensions
 
 
     /// <summary>
+    /// Create a scheduled task
+    /// </summary>
+    /// <param name="task">The task to run</param>
+    /// <param name="runTime">The time to run the task</param>
+    /// <returns>An unique identifier of the task</returns>
+    public static string CreateScheduleTask(this Task task, DateTime runTime, string UserId = "")
+    {
+        string UID = Guid.NewGuid().ToString();
+        CancellationTokenSource CancellationToken = new CancellationTokenSource();
+
+        _ = Task.Delay(runTime.GetTimespanUntil().Milliseconds, CancellationToken.Token).ContinueWith(x =>
+        {
+            if (x.IsCompletedSuccessfully)
+                task.Start();
+        });
+
+        registeredScheduledTasks.Add(UID, new taskInfo { tokenSource = CancellationToken, userId = UserId, runTime = runTime});
+        return UID;
+    }
+
+
+
+    /// <summary>
+    /// Deletes a scheduled task
+    /// </summary>
+    /// <param name="UID">The task's unique identifier</param>
+    /// <exception cref="Exception">Throws if the task hasn't been found or if an internal error occured</exception>
+    public static void DeleteSheduleTask(string UID)
+    {
+        if (!registeredScheduledTasks.ContainsKey(UID))
+            throw new Exception($"No sheduled task has been found with UID '{UID}'");
+
+        if (registeredScheduledTasks[ UID ].tokenSource is null)
+            throw new Exception($"Internal: There is no token source registered the specified task.");
+
+        registeredScheduledTasks[ UID ].tokenSource?.Cancel();
+        registeredScheduledTasks.Remove(UID);
+        return;
+    }
+
+
+
+    /// <summary>
+    /// Gets a list of all registered tasks
+    /// </summary>
+    /// <returns>A list of all registered tasks</returns>
+    public static IReadOnlyDictionary<string, taskInfo>? GetSheduleTasks()
+    {
+        return registeredScheduledTasks.ToList() as IReadOnlyDictionary<string, taskInfo>;
+    }
+
+
+
+    /// <summary>
+    /// Gets a specific task
+    /// </summary>
+    /// <param name="UID">The unique identifier of what task to get</param>
+    /// <returns>The task</returns>
+    /// <exception cref="Exception">Throws if the task has not been found</exception>
+    public static taskInfo GetSheduleTask(string UID)
+    {
+        if (!registeredScheduledTasks.ContainsKey(UID))
+            throw new Exception($"The specified task doesn't exist.");
+
+        return registeredScheduledTasks[UID];
+    }
+
+
+
+    /// <summary>
     /// Compute the SHA256-Hash for a given file
     /// </summary>
     /// <param name="filePath"></param>

@@ -77,3 +77,15 @@ internal static class Internal
         }
     }
 }
+
+public class InternalSheduler
+{
+    public static Dictionary<string, taskInfo> registeredScheduledTasks { get; private set; } = new Dictionary<string, taskInfo>();
+
+    public class taskInfo
+    {
+        public string userId { get; internal set; } = "";
+        internal CancellationTokenSource? tokenSource { get; set; }
+        public DateTime? runTime { get; internal set; }
+    }
+}
