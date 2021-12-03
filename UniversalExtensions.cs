@@ -168,6 +168,23 @@ public static class UniversalExtensions
 
 
 
+    internal static async Task LongDelay(TimeSpan delay, CancellationTokenSource token)
+    {
+        var st = new Stopwatch();
+        st.Start();
+        while (true && !token.IsCancellationRequested)
+        {
+            var remaining = (delay - st.Elapsed).TotalMilliseconds;
+            if (remaining <= 0)
+                break;
+            if (remaining > Int16.MaxValue)
+                remaining = Int16.MaxValue;
+            await Task.Delay(TimeSpan.FromMilliseconds(remaining), token.Token);
+        }
+    }
+
+
+
     /// <summary>
     /// Create a scheduled task
     /// </summary>
@@ -179,10 +196,10 @@ public static class UniversalExtensions
         string UID = Guid.NewGuid().ToString();
         CancellationTokenSource CancellationToken = new CancellationTokenSource();
 
-        if ((int)Math.Ceiling(runTime.GetTimespanUntil().TotalMilliseconds) < 0)
+        if (Math.Ceiling(runTime.GetTimespanUntil().TotalMilliseconds) < 0)
             runTime = DateTime.UtcNow.AddSeconds(1);
 
-        _ = Task.Delay((int)Math.Ceiling(runTime.GetTimespanUntil().TotalMilliseconds), CancellationToken.Token).ContinueWith(x =>
+        _ = LongDelay(runTime.GetTimespanUntil(), CancellationToken).ContinueWith(x =>
         {
             if (registeredScheduledTasks.ContainsKey(UID))
                 registeredScheduledTasks.Remove(UID);
