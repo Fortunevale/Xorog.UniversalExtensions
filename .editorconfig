@@ -23,3 +23,6 @@ dotnet_style_parentheses_in_arithmetic_binary_operators = always_for_clarity
 
 # IDE0047: Remove unnecessary parentheses
 dotnet_diagnostic.IDE0047.severity = none
+
+# DV2001: No Dependency Diagram linked
+dotnet_diagnostic.DV2001.severity = none
