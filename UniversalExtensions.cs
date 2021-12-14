@@ -168,6 +168,12 @@ public static class UniversalExtensions
 
 
 
+    /// <summary>
+    /// Runs a long non-blocking delay, a work-around for Task.Delay only supporting Int32
+    /// </summary>
+    /// <param name="delay">A timespan of how long the delay should last</param>
+    /// <param name="token">A cancellation token source to cancel the action</param>
+    /// <returns></returns>
     internal static async Task LongDelay(TimeSpan delay, CancellationTokenSource token)
     {
         var st = new Stopwatch();
