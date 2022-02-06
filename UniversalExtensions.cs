@@ -402,6 +402,15 @@ public static class UniversalExtensions
     public static string GetHumanReadable(this long seconds, TimeFormat timeFormat = TimeFormat.DAYS) =>
         TimeSpan.FromSeconds(seconds).GetTimeFormat(timeFormat);
 
+    /// <summary>
+    /// <inheritdoc cref="UniversalExtensions.GetHumanReadable(int, TimeFormat)"/>
+    /// </summary>
+    /// <param name="timeSpan"></param>
+    /// <param name="timeFormat"></param>
+    /// <returns></returns>
+    public static string GetHumanReadable(this TimeSpan timeSpan, TimeFormat timeFormat = TimeFormat.DAYS) =>
+        timeSpan.GetTimeFormat(timeFormat);
+
 
 
     /// <summary>
@@ -488,5 +497,10 @@ public static class StringExt
     {
         using SHA256 _SHA256 = SHA256.Create();
         return BitConverter.ToString(_SHA256.ComputeHash(Encoding.ASCII.GetBytes(str))).Replace("-", "").ToLowerInvariant();
+    }
+
+    public static string FirstLetterToUpper(this string str)
+    {
+        return $"{str.First().ToString().ToUpper()}{str.Remove(0, 1)}";
     }
 }
