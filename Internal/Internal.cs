@@ -84,7 +84,7 @@ public class InternalSheduler
 
     public class taskInfo
     {
-        public string userId { get; internal set; } = "";
+        public string customId { get; internal set; } = "";
         internal CancellationTokenSource? tokenSource { get; set; }
         public DateTime? runTime { get; internal set; }
     }

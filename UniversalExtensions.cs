@@ -197,7 +197,8 @@ public static class UniversalExtensions
     /// <param name="task">The task to run</param>
     /// <param name="runTime">The time to run the task</param>
     /// <returns>An unique identifier of the task</returns>
-    public static string CreateScheduleTask(this Task task, DateTime runTime, string UserId = "")
+
+    public static string CreateScheduleTask(this Task task, DateTime runTime, string CustomId = "")
     {
         string UID = Guid.NewGuid().ToString();
         CancellationTokenSource CancellationToken = new CancellationTokenSource();
@@ -214,7 +215,7 @@ public static class UniversalExtensions
                 task.Start();
         });
 
-        registeredScheduledTasks.Add(UID, new taskInfo { tokenSource = CancellationToken, userId = UserId, runTime = runTime});
+        registeredScheduledTasks.Add(UID, new taskInfo { tokenSource = CancellationToken, customId = CustomId, runTime = runTime});
         return UID;
     }
 
