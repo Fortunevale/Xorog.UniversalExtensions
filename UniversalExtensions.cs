@@ -225,7 +225,7 @@ public static class UniversalExtensions
     /// </summary>
     /// <param name="UID">The task's unique identifier</param>
     /// <exception cref="Exception">Throws if the task hasn't been found or if an internal error occured</exception>
-    public static void DeleteSheduleTask(string UID)
+    public static void DeleteScheduleTask(string UID)
     {
         if (!registeredScheduledTasks.ContainsKey(UID))
             throw new Exception($"No sheduled task has been found with UID '{UID}'");
@@ -244,7 +244,7 @@ public static class UniversalExtensions
     /// Gets a list of all registered tasks
     /// </summary>
     /// <returns>A list of all registered tasks</returns>
-    public static List<KeyValuePair<string, taskInfo>>? GetSheduleTasks()
+    public static List<KeyValuePair<string, taskInfo>>? GetScheduleTasks()
     {
         return registeredScheduledTasks.ToList();
     }
@@ -257,7 +257,7 @@ public static class UniversalExtensions
     /// <param name="UID">The unique identifier of what task to get</param>
     /// <returns>The task</returns>
     /// <exception cref="Exception">Throws if the task has not been found</exception>
-    public static taskInfo GetSheduleTask(string UID)
+    public static taskInfo GetScheduleTask(string UID)
     {
         if (!registeredScheduledTasks.ContainsKey(UID))
             throw new Exception($"The specified task doesn't exist.");
