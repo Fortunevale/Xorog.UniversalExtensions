@@ -439,6 +439,19 @@ public static class UniversalExtensions
     /// <returns></returns>
     public static string GetAllDigits(this string str) =>
         new(str.Where(Char.IsDigit).ToArray());
+
+
+
+    /// <summary>
+    /// Get country flag emoji based on Iso Country Code
+    /// </summary>
+    /// <param name="country"></param>
+    /// <returns></returns>
+    public static string IsoCountryCodeToFlagEmoji(this string country)
+    {
+        return string.Concat(country.ToUpper().Select(x => char.ConvertFromUtf32(x + 0x1F1A5)));
+    }
+
 }
 
 public static class StringExt
