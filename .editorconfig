@@ -26,3 +26,6 @@ dotnet_diagnostic.IDE0047.severity = none
 
 # DV2001: No Dependency Diagram linked
 dotnet_diagnostic.DV2001.severity = none
+
+# CS8602: Dereference of a possibly null reference.
+dotnet_diagnostic.CS8602.severity = silent
