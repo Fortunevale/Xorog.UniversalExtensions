@@ -6,6 +6,7 @@ global using System.Collections.Generic;
 global using System.Linq;
 global using System.Text;
 global using System.Threading.Tasks;
+global using System.Drawing;
 
 global using static Xorog.UniversalExtensions.UniversalExtensionsEnums;
 global using static Xorog.UniversalExtensions.Internal;

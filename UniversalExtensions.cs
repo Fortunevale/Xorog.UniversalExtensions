@@ -492,6 +492,19 @@ public static class UniversalExtensions
         return string.Concat(country.ToUpper().Select(x => char.ConvertFromUtf32(x + 0x1F1A5)));
     }
 
+
+    /// <summary>
+    /// Get closest Color to given Color
+    /// </summary>
+    /// <param name="colorArray"></param>
+    /// <param name="baseColor"></param>
+    /// <returns></returns>
+    public static Color GetClosestColor(List<Color> colorArray, Color baseColor)
+    {
+        var colors = colorArray.Select(x => new { Value = x, Diff = Internal.GetDiff(x, baseColor) }).ToList();
+        var min = colors.Min(x => x.Diff);
+        return colors.Find(x => x.Diff == min).Value;
+    }
 }
 
 public static class StringExt

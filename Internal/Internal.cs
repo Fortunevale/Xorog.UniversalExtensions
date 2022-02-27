@@ -76,6 +76,14 @@ internal static class Internal
                 return _timespan.ToString();
         }
     }
+    internal static int GetDiff(Color color, Color baseColor)
+    {
+        int a = color.A - baseColor.A,
+            r = color.R - baseColor.R,
+            g = color.G - baseColor.G,
+            b = color.B - baseColor.B;
+        return a * a + r * r + g * g + b * b;
+    }
 }
 
 public class InternalSheduler
