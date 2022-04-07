@@ -106,11 +106,11 @@ public static class UniversalExtensions
     /// <returns>The URL the redirect leads to</returns>
     public static async Task<string> UnshortenUrl(string url, bool UseHeadMethod = true)
     {
-        HttpClient client = new(new HttpClientHandler() 
-        { 
+        HttpClient client = new(new HttpClientHandler()
+        {
             AllowAutoRedirect = false,
             AutomaticDecompression = DecompressionMethods.GZip,
-            
+
         });
         client.Timeout = TimeSpan.FromSeconds(10);
         client.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4758.82 Safari/537.36");
@@ -148,9 +148,9 @@ public static class UniversalExtensions
         if (UseHeadMethod && statuscode is HttpStatusCode.NotFound or HttpStatusCode.InternalServerError)
             return await UnshortenUrl(url, false);
 
-        if (statuscode is HttpStatusCode.Found 
-            or HttpStatusCode.Redirect 
-            or HttpStatusCode.SeeOther 
+        if (statuscode is HttpStatusCode.Found
+            or HttpStatusCode.Redirect
+            or HttpStatusCode.SeeOther
             or HttpStatusCode.RedirectKeepVerb
             or HttpStatusCode.RedirectMethod
             or HttpStatusCode.PermanentRedirect
@@ -505,6 +505,20 @@ public static class UniversalExtensions
         var min = colors.Min(x => x.Diff);
         return colors.Find(x => x.Diff == min).Value;
     }
+
+
+
+    /// <summary>
+    /// Convert RGB Value to Hex
+    /// </summary>
+    /// <param name="R">Red</param>
+    /// <param name="G">Green</param>
+    /// <param name="B">Blue</param>
+    /// <returns>A string that represents the color in hex (e.g. 255, 0, 0 -> #FF0000)</returns>
+    private static string ToHex(int R, int G, int B)
+    {
+        return "#" + R.ToString("X2") + G.ToString("X2") + B.ToString("X2");
+    }
 }
 
 public static class StringExt
@@ -531,7 +545,7 @@ public static class StringExt
     /// <returns></returns>
     public static string TruncateWithIndication(this string value, int maxLength)
     {
-        if (string.IsNullOrEmpty(value)) 
+        if (string.IsNullOrEmpty(value))
             return value;
 
         return value.Length <= maxLength ? value : $"{value[ ..maxLength ]}..";
