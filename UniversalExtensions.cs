@@ -515,7 +515,7 @@ public static class UniversalExtensions
     /// <param name="G">Green</param>
     /// <param name="B">Blue</param>
     /// <returns>A string that represents the color in hex (e.g. 255, 0, 0 -> #FF0000)</returns>
-    private static string ToHex(int R, int G, int B)
+    public static string ToHex(int R, int G, int B)
     {
         return "#" + R.ToString("X2") + G.ToString("X2") + B.ToString("X2");
     }
