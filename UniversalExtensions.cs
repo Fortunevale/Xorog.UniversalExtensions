@@ -255,7 +255,22 @@ public static class UniversalExtensions
                 task.Start();
         });
 
-        registeredScheduledTasks.Add(UID, new taskInfo { tokenSource = CancellationToken, customId = CustomId, runTime = runTime});
+        if (registeredScheduledTasks is null)
+            registeredScheduledTasks = new();
+
+        try
+        {
+            registeredScheduledTasks.Add(UID, new taskInfo { tokenSource = CancellationToken, customId = CustomId, runTime = runTime });
+        }
+        catch (InvalidOperationException)
+        {
+            registeredScheduledTasks = new();
+            registeredScheduledTasks.Add(UID, new taskInfo { tokenSource = CancellationToken, customId = CustomId, runTime = runTime });
+        }
+        catch (Exception)
+        {
+            throw;
+        }
         return UID;
     }
 

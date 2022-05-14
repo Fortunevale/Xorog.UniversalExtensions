@@ -88,7 +88,7 @@ internal static class Internal
 
 public class InternalSheduler
 {
-    public static Dictionary<string, taskInfo> registeredScheduledTasks { get; private set; } = new Dictionary<string, taskInfo>();
+    public static Dictionary<string, taskInfo> registeredScheduledTasks { get; internal set; } = new Dictionary<string, taskInfo>();
 
     public class taskInfo
     {
