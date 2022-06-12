@@ -2,6 +2,27 @@
 
 public static class UniversalExtensions
 {
+    public static bool IsNullOrWhiteSpace(this string str) => string.IsNullOrWhiteSpace(str);
+
+    public static bool IsNullOrEmpty(this string str) => string.IsNullOrEmpty(str);
+
+    public static T SelectRandom<T>(this IEnumerable<T> obj)
+    {
+        if (obj == null)
+        {
+            throw new ArgumentNullException();
+        }
+
+        if (!obj.Any())
+        {
+            throw new ArgumentException("The sequence is empty.");
+        }
+
+
+        int rng = new Random().Next(0, obj.Count());
+        return obj.ElementAt(rng) ?? throw new ArgumentNullException();
+    }
+
     /// <summary>
     /// Get the current CPU Usage on all plattforms
     /// </summary>
