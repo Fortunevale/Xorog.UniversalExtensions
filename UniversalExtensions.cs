@@ -543,6 +543,15 @@ public static class UniversalExtensions
     }
 
 
+    /// <summary>
+    /// Convert Hex to Color
+    /// </summary>
+    /// <returns>The converted color</returns>
+    public static Color ToColor(this string str)
+    {
+        return ColorTranslator.FromHtml(str);
+    }
+
 
     /// <summary>
     /// Convert RGB Value to Hex
