@@ -323,6 +323,9 @@ public static class UniversalExtensions
     /// <returns>A list of all registered tasks</returns>
     public static List<KeyValuePair<string, taskInfo>>? GetScheduleTasks()
     {
+        if (registeredScheduledTasks is null)
+            registeredScheduledTasks = new();
+
         return registeredScheduledTasks.ToList();
     }
 
