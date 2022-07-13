@@ -133,7 +133,7 @@ public static class UniversalExtensions
             AutomaticDecompression = DecompressionMethods.GZip,
 
         });
-        client.Timeout = TimeSpan.FromSeconds(10);
+        client.Timeout = TimeSpan.FromSeconds(60);
         client.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4758.82 Safari/537.36");
         client.DefaultRequestHeaders.Add("upgrade-insecure-requests", "1");
         client.DefaultRequestHeaders.Add("accept-encoding", "gzip, deflate, br");
