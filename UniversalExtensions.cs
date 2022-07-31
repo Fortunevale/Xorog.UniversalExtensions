@@ -22,6 +22,11 @@ public static class UniversalExtensions
         int rng = new Random().Next(0, obj.Count());
         return obj.ElementAt(rng) ?? throw new ArgumentNullException();
     }
+    
+    public static bool IsNotNullAndNotEmpty<T>(this IEnumerable<T> obj)
+    {
+        return obj is not null && obj.Any();
+    }
 
     /// <summary>
     /// Get the current CPU Usage on all plattforms
