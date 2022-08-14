@@ -2,10 +2,32 @@
 
 public static class UniversalExtensions
 {
+    /// <summary>
+    /// Extensions for string.IsNullOrWhiteSpace
+    /// </summary>
+    /// <param name="str"></param>
+    /// <returns>Whether the string is null, empty or only contains whitespaces</returns>
     public static bool IsNullOrWhiteSpace(this string str) => string.IsNullOrWhiteSpace(str);
 
+
+
+    /// <summary>
+    /// Extensions for string.IsNullOrEmpty
+    /// </summary>
+    /// <param name="str"></param>
+    /// <returns>Whether the string is null or empty</returns>
     public static bool IsNullOrEmpty(this string str) => string.IsNullOrEmpty(str);
 
+
+
+    /// <summary>
+    /// Select a random item from a list
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="obj"></param>
+    /// <returns>The randomly selected item</returns>
+    /// <exception cref="ArgumentNullException">The list is null</exception>
+    /// <exception cref="ArgumentException">The list is empty</exception>
     public static T SelectRandom<T>(this IEnumerable<T> obj)
     {
         if (obj == null)
@@ -22,11 +44,18 @@ public static class UniversalExtensions
         int rng = new Random().Next(0, obj.Count());
         return obj.ElementAt(rng) ?? throw new ArgumentNullException();
     }
-    
-    public static bool IsNotNullAndNotEmpty<T>(this IEnumerable<T> obj)
-    {
-        return obj is not null && obj.Any();
-    }
+
+
+
+    /// <summary>
+    /// Check whether a list contains elements and is not null
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="obj"></param>
+    /// <returns>Whether the list contains elements and is not null</returns>
+    public static bool IsNotNullAndNotEmpty<T>(this IEnumerable<T> obj) => obj is not null && obj.Any();
+
+
 
     /// <summary>
     /// Get the current CPU Usage on all plattforms
@@ -326,12 +355,12 @@ public static class UniversalExtensions
     /// Gets a list of all registered tasks
     /// </summary>
     /// <returns>A list of all registered tasks</returns>
-    public static List<KeyValuePair<string, taskInfo>>? GetScheduleTasks()
+    public static IReadOnlyDictionary<string, taskInfo>? GetScheduleTasks()
     {
         if (registeredScheduledTasks is null)
             registeredScheduledTasks = new();
 
-        return registeredScheduledTasks.ToList();
+        return registeredScheduledTasks as IReadOnlyDictionary<string, taskInfo>;
     }
 
 
