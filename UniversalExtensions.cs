@@ -494,6 +494,9 @@ public static class UniversalExtensions
     public static string GetShortHumanReadable(this long seconds, TimeFormat timeFormat = TimeFormat.DAYS) =>
         TimeSpan.FromSeconds(seconds).GetShortTimeFormat(timeFormat);
 
+    public static string GetShortHumanReadable(this TimeSpan timespan, TimeFormat timeFormat = TimeFormat.DAYS) =>
+        timespan.GetShortTimeFormat(timeFormat);
+
 
 
     /// <summary>
