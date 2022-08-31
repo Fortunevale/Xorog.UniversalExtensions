@@ -633,7 +633,7 @@ public static class StringExt
         if (string.IsNullOrEmpty(value))
             return value;
 
-        return value.Length <= maxLength ? value : $"{value[ ..maxLength ]}..";
+        return value.Length <= maxLength ? value : $"{value[ ..(maxLength - 2) ]}..";
     }
 
 
