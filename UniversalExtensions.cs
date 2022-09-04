@@ -58,7 +58,7 @@ public static class UniversalExtensions
 
 
     /// <summary>
-    /// Get the current CPU Usage on all plattforms
+    /// Get the current CPU Usage on all platforms
     /// </summary>
     /// <returns></returns>
     public static async Task<double> GetCpuUsageForProcess()
@@ -335,7 +335,7 @@ public static class UniversalExtensions
     /// Deletes a scheduled task
     /// </summary>
     /// <param name="UID">The task's unique identifier</param>
-    /// <exception cref="Exception">Throws if the task hasn't been found or if an internal error occured</exception>
+    /// <exception cref="Exception">Throws if the task hasn't been found or if an internal error occurred</exception>
     public static void DeleteScheduleTask(string UID)
     {
         if (!registeredScheduledTasks.ContainsKey(UID))
