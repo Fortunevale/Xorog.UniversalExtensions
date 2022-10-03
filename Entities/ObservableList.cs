@@ -16,21 +16,8 @@ public class ObservableList<T> : IList<T>
 
     public void Add(T item)
     {
-        _ = Task.Run(() =>
-        {
-            this.ItemsChanged?.Invoke(null, new ObservableListUpdate<T>
-            {
-               List = this,
-               NewItems = new List<T>() { item },
-               RemovedItems = null
-            });
-        });
-
         _items.Add(item);
-    }
 
-    public void Insert(int index, T item)
-    {
         _ = Task.Run(() =>
         {
             this.ItemsChanged?.Invoke(null, new ObservableListUpdate<T>
@@ -40,12 +27,27 @@ public class ObservableList<T> : IList<T>
                 RemovedItems = null
             });
         });
+    }
 
+    public void Insert(int index, T item)
+    {
         _items.Insert(index, item);
+
+        _ = Task.Run(() =>
+        {
+            this.ItemsChanged?.Invoke(null, new ObservableListUpdate<T>
+            {
+                List = this,
+                NewItems = new List<T>() { item },
+                RemovedItems = null
+            });
+        });
     }
 
     public void Clear()
     {
+        _items.Clear();
+
         _ = Task.Run(() =>
         {
             this.ItemsChanged?.Invoke(null, new ObservableListUpdate<T>
@@ -55,27 +57,29 @@ public class ObservableList<T> : IList<T>
                 RemovedItems = _items.ToList()
             });
         });
-
-        _items.Clear();
     }
 
     public void RemoveAt(int index)
     {
-        _ = Task.Run(() =>
+        ObservableListUpdate<T> e = new ObservableListUpdate<T>
         {
-            this.ItemsChanged?.Invoke(null, new ObservableListUpdate<T>
-            {
-                List = this,
-                NewItems = null,
-                RemovedItems = new List<T>() { _items.ElementAt(index) }
-            });
-        });
+            List = this,
+            NewItems = null,
+            RemovedItems = new List<T>() { _items.ElementAt(index) }
+        };
 
         _items.RemoveAt(index);
+
+        _ = Task.Run(() =>
+        {
+            this.ItemsChanged?.Invoke(null, e);
+        });
     }
 
     public bool Remove(T item)
     {
+        var v = _items.Remove(item);
+        
         _ = Task.Run(() =>
         {
             this.ItemsChanged?.Invoke(null, new ObservableListUpdate<T>
@@ -86,7 +90,7 @@ public class ObservableList<T> : IList<T>
             });
         });
 
-        return _items.Remove(item);
+        return v;
     }
 
     public bool Contains(T item)
