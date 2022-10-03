@@ -8,7 +8,7 @@ public class ObservableList<T> : IList<T>
 
     public event EventHandler<ObservableListUpdate<T>>? ItemsChanged;
 
-    public T this[int index] { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+    public T this[int index] { get => _items[index]; set { _items[index] = value; } }
 
     public int Count => _items.Count;
 
