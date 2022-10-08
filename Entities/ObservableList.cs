@@ -6,7 +6,7 @@ public class ObservableList<T> : IList<T>
 {
     private List<T> _items = new();
 
-    public event EventHandler<ObservableListUpdate<T>>? ItemsChanged;
+    public event EventHandler<ObservableListUpdate<T>> ItemsChanged = delegate { };
 
     public T this[int index] { get => _items[index]; set { _items[index] = value; } }
 
@@ -20,7 +20,7 @@ public class ObservableList<T> : IList<T>
 
         _ = Task.Run(() =>
         {
-            this.ItemsChanged?.Invoke(null, new ObservableListUpdate<T>
+            this.ItemsChanged.Invoke(null, new ObservableListUpdate<T>
             {
                 List = this,
                 NewItems = new List<T>() { item },
