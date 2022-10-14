@@ -22,7 +22,7 @@ public class ObservableList<T> : IList<T>
         {
             this.ItemsChanged.Invoke(null, new ObservableListUpdate<T>
             {
-                List = this,
+                List = this.ToList(),
                 NewItems = new List<T>() { item },
                 RemovedItems = null
             });
@@ -37,7 +37,7 @@ public class ObservableList<T> : IList<T>
         {
             this.ItemsChanged?.Invoke(null, new ObservableListUpdate<T>
             {
-                List = this,
+                List = this.ToList(),
                 NewItems = new List<T>() { item },
                 RemovedItems = null
             });
@@ -46,15 +46,16 @@ public class ObservableList<T> : IList<T>
 
     public void Clear()
     {
+        var oldList = _items.ToList();
         _items.Clear();
 
         _ = Task.Run(() =>
         {
             this.ItemsChanged?.Invoke(null, new ObservableListUpdate<T>
             {
-                List = this,
+                List = this.ToList(),
                 NewItems = null,
-                RemovedItems = _items.ToList()
+                RemovedItems = oldList
             });
         });
     }
@@ -63,7 +64,7 @@ public class ObservableList<T> : IList<T>
     {
         ObservableListUpdate<T> e = new ObservableListUpdate<T>
         {
-            List = this,
+            List = this.ToList(),
             NewItems = null,
             RemovedItems = new List<T>() { _items.ElementAt(index) }
         };
@@ -84,7 +85,7 @@ public class ObservableList<T> : IList<T>
         {
             this.ItemsChanged?.Invoke(null, new ObservableListUpdate<T>
             {
-                List = this,
+                List = this.ToList(),
                 NewItems = null,
                 RemovedItems = new List<T>() { item }
             });
