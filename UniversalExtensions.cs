@@ -339,7 +339,7 @@ public static class UniversalExtensions
     public static void DeleteScheduleTask(string UID)
     {
         if (!registeredScheduledTasks.ContainsKey(UID))
-            throw new Exception($"No sheduled task has been found with UID '{UID}'");
+            throw new Exception($"No scheduled task has been found with UID '{UID}'");
 
         if (registeredScheduledTasks[ UID ].tokenSource is null)
             throw new Exception($"Internal: There is no token source registered the specified task.");
