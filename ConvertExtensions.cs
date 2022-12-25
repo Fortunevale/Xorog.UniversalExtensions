@@ -919,4 +919,7 @@ public static class ConvertExtensions
 
     public static ulong ToUInt64(this long value)
         => Convert.ToUInt64(value);
+
+    public static string Replace(this string input, string old, object @new)
+        => input.Replace(old, @new.ToString());
 }
