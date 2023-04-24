@@ -382,14 +382,27 @@ public static class UniversalExtensions
 
 
     /// <summary>
+    /// Compute the SHA256-Hash for the given string
+    /// </summary>
+    /// <param name="filePath"></param>
+    /// <returns></returns>
+    public static string ComputeSHA256Hash(string str)
+    {
+        using SHA256 _SHA256 = SHA256.Create();
+        return BitConverter.ToString(_SHA256.ComputeHash(Encoding.ASCII.GetBytes(str))).Replace("-", "").ToLowerInvariant();
+    }
+
+
+
+    /// <summary>
     /// Compute the SHA256-Hash for a given file
     /// </summary>
     /// <param name="filePath"></param>
     /// <returns></returns>
-    public static string ComputeSHA256Hash(string filePath)
+    public static string ComputeSHA256Hash(FileInfo filePath)
     {
         using SHA256 _SHA256 = SHA256.Create();
-        using FileStream fileStream = File.OpenRead(filePath);
+        using FileStream fileStream = filePath.OpenRead();
         return BitConverter.ToString(_SHA256.ComputeHash(fileStream)).Replace("-", "").ToLowerInvariant();
     }
 
@@ -401,7 +414,7 @@ public static class UniversalExtensions
     /// <param name="until"></param>
     /// <returns></returns>
     public static TimeSpan GetTimespanUntil(this DateTime until) =>
-    (until.ToUniversalTime() - DateTime.UtcNow);
+        (until.ToUniversalTime() - DateTime.UtcNow);
 
 
 
@@ -604,10 +617,7 @@ public static class UniversalExtensions
     {
         return "#" + R.ToString("X2") + G.ToString("X2") + B.ToString("X2");
     }
-}
 
-public static class StringExt
-{
     /// <summary>
     /// Shorten a string to the given length
     /// </summary>
@@ -616,8 +626,9 @@ public static class StringExt
     /// <returns></returns>
     public static string Truncate(this string value, int maxLength)
     {
-        if (string.IsNullOrEmpty(value)) return value;
-        return value.Length <= maxLength ? value : value[ ..maxLength ];
+        if (string.IsNullOrEmpty(value))
+            return value;
+        return value.Length <= maxLength ? value : value[..maxLength];
     }
 
 
@@ -633,7 +644,7 @@ public static class StringExt
         if (string.IsNullOrEmpty(value))
             return value;
 
-        return value.Length <= maxLength ? value : $"{value[ ..(maxLength - 2) ]}..";
+        return value.Length <= maxLength ? value : $"{value[..(maxLength - 2)]}..";
     }
 
 
@@ -655,16 +666,10 @@ public static class StringExt
 
 
     /// <summary>
-    /// Compute the SHA256-Hash for the given string
+    /// Changes the first letter to upper.
     /// </summary>
-    /// <param name="filePath"></param>
-    /// <returns></returns>
-    public static string ComputeSHA256Hash(string str)
-    {
-        using SHA256 _SHA256 = SHA256.Create();
-        return BitConverter.ToString(_SHA256.ComputeHash(Encoding.ASCII.GetBytes(str))).Replace("-", "").ToLowerInvariant();
-    }
-
+    /// <param name="str">The string to modify.</param>
+    /// <returns>The string with the first letter changed to upper.</returns>
     public static string FirstLetterToUpper(this string str)
     {
         return $"{str.First().ToString().ToUpper()}{str.Remove(0, 1)}";

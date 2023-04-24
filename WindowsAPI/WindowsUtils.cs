@@ -10,9 +10,7 @@ public class WindowsUtils
         var processHandle = kernel32.OpenProcess(0x0400 | 0x0010, false, pid);
 
         if (processHandle == IntPtr.Zero)
-        {
             return null;
-        }
 
         const int lengthSb = 4000;
 
