@@ -3,6 +3,16 @@
 public static class UniversalExtensions
 {
     /// <summary>
+    /// Attaches a logger to UniversalExtensions. Used for Debug purposes.
+    /// </summary>
+    /// <param name="logger"></param>
+    public static void AttachLogger(ILogger logger)
+    {
+        _logger = logger;
+    }
+
+
+    /// <summary>
     /// Extensions for string.IsNullOrWhiteSpace
     /// </summary>
     /// <param name="str"></param>
@@ -161,6 +171,8 @@ public static class UniversalExtensions
     /// <returns>The URL the redirect leads to</returns>
     public static async Task<string> UnshortenUrl(string url, bool UseHeadMethod = true)
     {
+        _logger?.LogDebug("Unshortening Url '{Url}', using head method: {UseHeadMethod}", url, UseHeadMethod);
+
         HttpClient client = new(new HttpClientHandler()
         {
             AllowAutoRedirect = false,
@@ -194,14 +206,20 @@ public static class UniversalExtensions
         if (!request_task.IsCompleted)
             cancellationTokenSource.Cancel();
 
-        if (UseHeadMethod && request_task.IsFaulted && request_task.Exception.InnerException.GetType().FullName == "System.Net.Http.HttpRequestException")
+        if (UseHeadMethod && request_task.IsFaulted && request_task.Exception.InnerException.GetType() == typeof(HttpRequestException))
+        {
+            _logger?.LogWarning("Unshortening Url '{Url}' failed, falling back to non-head method", url);
             return await UnshortenUrl(url, false);
+        }
 
         var statuscode = request_task.Result.StatusCode;
         var header = request_task.Result.Headers;
 
         if (UseHeadMethod && statuscode is HttpStatusCode.NotFound or HttpStatusCode.InternalServerError)
+        {
+            _logger?.LogWarning("Unshortening Url '{Url}' failed, falling back to non-head method", url);
             return await UnshortenUrl(url, false);
+        }
 
         if (statuscode is HttpStatusCode.Found
             or HttpStatusCode.Redirect
@@ -291,9 +309,10 @@ public static class UniversalExtensions
     /// </summary>
     /// <param name="task">The task to run</param>
     /// <param name="runTime">The time to run the task</param>
+    /// <param name="customData">Any custom data you wish to provide.</param>
     /// <returns>An unique identifier of the task</returns>
 
-    public static string CreateScheduleTask(this Task task, DateTime runTime, string CustomId = "")
+    public static string CreateScheduledTask(this Task task, DateTime runTime, object? customData = null)
     {
         string UID = Guid.NewGuid().ToString();
         CancellationTokenSource CancellationToken = new CancellationTokenSource();
@@ -303,28 +322,28 @@ public static class UniversalExtensions
 
         _ = LongDelay(runTime.GetTimespanUntil(), CancellationToken).ContinueWith(x =>
         {
-            if (registeredScheduledTasks.ContainsKey(UID))
-                registeredScheduledTasks.Remove(UID);
+            lock (RegisteredScheduledTasks)
+            {
+                RegisteredScheduledTasks.Remove(UID); 
+            }
+
+            _logger?.LogDebug("Running scheduled task with UID '{UID}'", UID, runTime.GetTimespanUntil().GetHumanReadable());
 
             if (x.IsCompletedSuccessfully)
                 task.Start();
         });
 
-        if (registeredScheduledTasks is null)
-            registeredScheduledTasks = new();
+        lock (RegisteredScheduledTasks)
+        {
+            _logger?.LogDebug("Creating scheduled task with UID '{UID}' running in {RunTime}", UID, runTime.GetTimespanUntil().GetHumanReadable());
 
-        try
-        {
-            registeredScheduledTasks.Add(UID, new taskInfo { tokenSource = CancellationToken, customId = CustomId, runTime = runTime });
-        }
-        catch (InvalidOperationException)
-        {
-            registeredScheduledTasks = new();
-            registeredScheduledTasks.Add(UID, new taskInfo { tokenSource = CancellationToken, customId = CustomId, runTime = runTime });
-        }
-        catch (Exception)
-        {
-            throw;
+            RegisteredScheduledTasks.Add(UID, new ScheduledTask
+            {
+                Uid = UID,
+                RunTime = runTime,
+                TokenSource = CancellationToken,
+                CustomData = customData,
+            });
         }
         return UID;
     }
@@ -335,17 +354,22 @@ public static class UniversalExtensions
     /// Deletes a scheduled task
     /// </summary>
     /// <param name="UID">The task's unique identifier</param>
-    /// <exception cref="Exception">Throws if the task hasn't been found or if an internal error occurred</exception>
-    public static void DeleteScheduleTask(string UID)
+    /// <exception cref="KeyNotFoundException">Throws if the task hasn't been found or if an internal error occurred</exception>
+    public static void DeleteScheduledTask(string UID)
     {
-        if (!registeredScheduledTasks.ContainsKey(UID))
-            throw new Exception($"No scheduled task has been found with UID '{UID}'");
+        if (!RegisteredScheduledTasks.ContainsKey(UID))
+            throw new KeyNotFoundException($"No scheduled task has been found with UID '{UID}'");
 
-        if (registeredScheduledTasks[ UID ].tokenSource is null)
+        if (RegisteredScheduledTasks[UID].TokenSource is null)
             throw new Exception($"Internal: There is no token source registered the specified task.");
 
-        registeredScheduledTasks[ UID ].tokenSource?.Cancel();
-        registeredScheduledTasks.Remove(UID);
+        _logger?.LogDebug("Deleting scheduled task with UID '{UID}'", UID);
+
+        lock (RegisteredScheduledTasks)
+        {
+            RegisteredScheduledTasks[UID].TokenSource?.Cancel();
+            RegisteredScheduledTasks.Remove(UID); 
+        }
         return;
     }
 
@@ -355,15 +379,8 @@ public static class UniversalExtensions
     /// Gets a list of all registered tasks
     /// </summary>
     /// <returns>A list of all registered tasks</returns>
-    public static IReadOnlyDictionary<string, taskInfo>? GetScheduleTasks()
-    {
-        if (registeredScheduledTasks is null)
-            registeredScheduledTasks = new();
-
-        return registeredScheduledTasks as IReadOnlyDictionary<string, taskInfo>;
-    }
-
-
+    public static IReadOnlyList<ScheduledTask>? GetScheduledTasks() 
+        => RegisteredScheduledTasks.Select(x => x.Value).ToList().AsReadOnly();
 
     /// <summary>
     /// Gets a specific task
@@ -371,13 +388,8 @@ public static class UniversalExtensions
     /// <param name="UID">The unique identifier of what task to get</param>
     /// <returns>The task</returns>
     /// <exception cref="Exception">Throws if the task has not been found</exception>
-    public static taskInfo GetScheduleTask(string UID)
-    {
-        if (!registeredScheduledTasks.ContainsKey(UID))
-            throw new Exception($"The specified task doesn't exist.");
-
-        return registeredScheduledTasks[UID];
-    }
+    public static ScheduledTask GetScheduledTask(string UID) 
+        => RegisteredScheduledTasks[UID];
 
 
 
@@ -513,33 +525,23 @@ public static class UniversalExtensions
 
 
     /// <summary>
-    /// Get a human readable string for the given amount of seconds
+    /// Get a human readable string for the given amount of time.
     /// </summary>
     /// <param name="seconds"></param>
     /// <param name="timeFormat"></param>
     /// <returns></returns>
-    public static string GetHumanReadable(this int seconds, TimeFormat timeFormat = TimeFormat.DAYS) =>
-        TimeSpan.FromSeconds(seconds).GetTimeFormat(timeFormat);
+    public static string GetHumanReadable(this int seconds, TimeFormat timeFormat = TimeFormat.DAYS, HumanReadableTimeFormatConfig? config = null) =>
+        TimeSpan.FromSeconds(seconds).GetTimeFormat(timeFormat,config);
 
 
 
-    /// <summary>
     /// <inheritdoc cref="UniversalExtensions.GetHumanReadable(int, TimeFormat)"/>
-    /// </summary>
-    /// <param name="seconds"></param>
-    /// <param name="timeFormat"></param>
-    /// <returns></returns>
-    public static string GetHumanReadable(this long seconds, TimeFormat timeFormat = TimeFormat.DAYS) =>
-        TimeSpan.FromSeconds(seconds).GetTimeFormat(timeFormat);
+    public static string GetHumanReadable(this long seconds, TimeFormat timeFormat = TimeFormat.DAYS, HumanReadableTimeFormatConfig? config = null) =>
+        TimeSpan.FromSeconds(seconds).GetTimeFormat(timeFormat, config);
 
-    /// <summary>
     /// <inheritdoc cref="UniversalExtensions.GetHumanReadable(int, TimeFormat)"/>
-    /// </summary>
-    /// <param name="timeSpan"></param>
-    /// <param name="timeFormat"></param>
-    /// <returns></returns>
-    public static string GetHumanReadable(this TimeSpan timeSpan, TimeFormat timeFormat = TimeFormat.DAYS) =>
-        timeSpan.GetTimeFormat(timeFormat);
+    public static string GetHumanReadable(this TimeSpan timeSpan, TimeFormat timeFormat = TimeFormat.DAYS, HumanReadableTimeFormatConfig? config = null) =>
+        timeSpan.GetTimeFormat(timeFormat, config);
 
 
 

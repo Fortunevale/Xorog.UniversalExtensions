@@ -6,71 +6,64 @@ internal static class Internal
     {
         switch (timeFormat)
         {
-            case TimeFormat.HOURS:
-                if (_timespan.TotalDays >= 1)
-                    return $"{(Math.Floor(_timespan.TotalHours).ToString().Length == 1 ? $"0{Math.Floor(_timespan.TotalHours)}" : Math.Floor(_timespan.TotalHours))}:" +
-                        $"{(_timespan.Minutes.ToString().Length == 1 ? $"0{_timespan.Minutes}" : _timespan.Minutes)}:" +
-                        $"{(_timespan.Seconds.ToString().Length == 1 ? $"0{_timespan.Seconds}" : _timespan.Seconds)}";
-
-                if (_timespan.TotalHours >= 1)
-                    return $"{(_timespan.Hours.ToString().Length == 1 ? $"0{_timespan.Hours}" : _timespan.Hours)}:" +
-                        $"{(_timespan.Minutes.ToString().Length == 1 ? $"0{_timespan.Minutes}" : _timespan.Minutes)}:" +
-                        $"{(_timespan.Seconds.ToString().Length == 1 ? $"0{_timespan.Seconds}" : _timespan.Seconds)}";
-
-                return $"{(_timespan.Minutes.ToString().Length == 1 ? $"0{_timespan.Minutes}" : _timespan.Minutes)}:" +
-                       $"{(_timespan.Seconds.ToString().Length == 1 ? $"0{_timespan.Seconds}" : _timespan.Seconds)}";
             case TimeFormat.DAYS:
                 if (_timespan.TotalDays >= 1)
-                    return $"{(Math.Floor(_timespan.TotalDays).ToString().Length == 1 ? $"0{Math.Floor(_timespan.TotalDays)}" : Math.Floor(_timespan.TotalDays))}" +
-                            $"{(_timespan.Hours.ToString().Length == 1 ? $"0{_timespan.Hours}" : _timespan.Hours)}:" +
-                            $"{(_timespan.Minutes.ToString().Length == 1 ? $"0{_timespan.Minutes}" : _timespan.Minutes)}:" +
-                            $"{(_timespan.Seconds.ToString().Length == 1 ? $"0{_timespan.Seconds}" : _timespan.Seconds)}";
+                    return $"{Math.Floor(_timespan.TotalDays).ToString().PadLeft(2, '0')}:{_timespan.Hours.ToString().PadLeft(2, '0')}:{_timespan.Minutes.ToString().PadLeft(2, '0')}:{_timespan.Seconds.ToString().PadLeft(2, '0')}";
 
                 if (_timespan.TotalHours >= 1)
-                    return $"{(Math.Floor(_timespan.TotalHours).ToString().Length == 1 ? $"0{Math.Floor(_timespan.TotalHours)}" : Math.Floor(_timespan.TotalHours))}:" +
-                            $"{(_timespan.Minutes.ToString().Length == 1 ? $"0{_timespan.Minutes}" : _timespan.Minutes)}:" +
-                            $"{(_timespan.Seconds.ToString().Length == 1 ? $"0{_timespan.Seconds}" : _timespan.Seconds)}";
+                    return $"{Math.Floor(_timespan.TotalHours).ToString().PadLeft(2, '0')}:{_timespan.Minutes.ToString().PadLeft(2, '0')}:{_timespan.Seconds.ToString().PadLeft(2, '0')}";
 
-                return $"{(_timespan.Minutes.ToString().Length == 1 ? $"0{_timespan.Minutes}" : _timespan.Minutes)}:" +
-                       $"{(_timespan.Seconds.ToString().Length == 1 ? $"0{_timespan.Seconds}" : _timespan.Seconds)}";
+                return $"{_timespan.Minutes.ToString().PadLeft(2, '0')}:{_timespan.Seconds.ToString().PadLeft(2, '0')}";
+
+            case TimeFormat.HOURS:
+                if (_timespan.TotalDays >= 1)
+                    return $"{Math.Floor(_timespan.TotalHours).ToString().PadLeft(2, '0')}:" +
+                        $"{_timespan.Minutes.ToString().PadLeft(2, '0')}:{_timespan.Seconds.ToString().PadLeft(2, '0')}";
+
+                if (_timespan.TotalHours >= 1)
+                    return $"{_timespan.Hours.ToString().PadLeft(2, '0')}:" +
+                        $"{_timespan.Minutes.ToString().PadLeft(2, '0')}:{_timespan.Seconds.ToString().PadLeft(2, '0')}";
+
+                return $"{_timespan.Minutes.ToString().PadLeft(2, '0')}:{_timespan.Seconds.ToString().PadLeft(2, '0')}";
 
             case TimeFormat.MINUTES:
                 if (_timespan.TotalHours >= 1)
-                    return $"{(Math.Floor(_timespan.TotalMinutes).ToString().Length == 1 ? $"0{Math.Floor(_timespan.TotalMinutes)}" : Math.Floor(_timespan.TotalMinutes))}:" +
-                            $"{(_timespan.Seconds.ToString().Length == 1 ? $"0{_timespan.Seconds}" : _timespan.Seconds)}";
+                    return $"{Math.Floor(_timespan.TotalMinutes).ToString().PadLeft(2, '0')}:{_timespan.Seconds.ToString().PadLeft(2, '0')}";
 
-                return $"{(_timespan.Minutes.ToString().Length == 1 ? $"0{_timespan.Minutes}" : _timespan.Minutes)}:" +
-                       $"{(_timespan.Seconds.ToString().Length == 1 ? $"0{_timespan.Seconds}" : _timespan.Seconds)}";
+                return $"{_timespan.Minutes.ToString().PadLeft(2, '0')}:{_timespan.Seconds.ToString().PadLeft(2, '0')}";
 
             default:
                 return _timespan.ToString();
         }
     }
-    internal static string GetTimeFormat(this TimeSpan _timespan, TimeFormat timeFormat)
+    internal static string GetTimeFormat(this TimeSpan _timespan, TimeFormat timeFormat, HumanReadableTimeFormatConfig? config = null)
     {
+        config ??= new();
+
         switch (timeFormat)
         {
-            case TimeFormat.HOURS:
-                if (_timespan.TotalDays >= 1)
-                    return $"{Math.Floor(_timespan.TotalHours)} hours, {_timespan.Minutes} minutes";
-
-                if (_timespan.TotalHours >= 1)
-                    return $"{_timespan.Hours} hours, {_timespan.Minutes} minutes";
-
-                return $"{_timespan.Minutes} minutes, {_timespan.Seconds} seconds";
             case TimeFormat.DAYS:
                 if (_timespan.TotalDays >= 1)
-                    return $"{Math.Floor(_timespan.TotalDays)} days, {_timespan.Hours} hours";
+                    return $"{Math.Floor(_timespan.TotalDays)} {config.DaysString}, {_timespan.Hours} {config.HoursString}";
 
                 if (_timespan.TotalHours >= 1)
-                    return $"{_timespan.Hours} hours, {_timespan.Minutes} minutes";
+                    return $"{_timespan.Hours} {config.HoursString}, {_timespan.Minutes} {config.MinutesString}";
 
-                return $"{_timespan.Minutes} minutes, {_timespan.Seconds} seconds";
+                return $"{_timespan.Minutes} {config.MinutesString}, {_timespan.Seconds} {config.SecondsString}";
+
+            case TimeFormat.HOURS:
+                if (_timespan.TotalDays >= 1)
+                    return $"{Math.Floor(_timespan.TotalHours)} {config.HoursString}, {_timespan.Minutes} {config.MinutesString}";
+
+                if (_timespan.TotalHours >= 1)
+                    return $"{_timespan.Hours} {config.HoursString}, {_timespan.Minutes} {config.MinutesString}";
+
+                return $"{_timespan.Minutes} {config.MinutesString}, {_timespan.Seconds} {config.SecondsString}";
 
             case TimeFormat.MINUTES:
                 if (_timespan.TotalHours >= 1)
-                    return $"{Math.Floor(_timespan.TotalMinutes)} minutes, {_timespan.Seconds} seconds";
-                return $"{_timespan.Minutes} minutes, {_timespan.Seconds} seconds";
+                    return $"{Math.Floor(_timespan.TotalMinutes)} {config.MinutesString}, {_timespan.Seconds} {config.SecondsString}";
+                return $"{_timespan.Minutes} {config.MinutesString}, {_timespan.Seconds} {config.MinutesString}";
 
             default:
                 return _timespan.ToString();
@@ -88,12 +81,66 @@ internal static class Internal
 
 public class InternalSheduler
 {
-    public static Dictionary<string, taskInfo> registeredScheduledTasks { get; internal set; } = new Dictionary<string, taskInfo>();
+    public static Dictionary<string, ScheduledTask> RegisteredScheduledTasks { get; internal set; } = new Dictionary<string, ScheduledTask>();
 
-    public class taskInfo
+    public class ScheduledTask
     {
-        public string customId { get; internal set; } = "";
-        internal CancellationTokenSource? tokenSource { get; set; }
-        public DateTime? runTime { get; internal set; }
+        public ScheduledTask()
+        {
+            this.Uid = Guid.NewGuid().ToString();
+        }
+
+        /// <summary>
+        /// The unique identifier of this task.
+        /// </summary>
+        public string Uid { get; internal set; }
+
+        /// <summary>
+        /// The custom data asscociated with this task.
+        /// </summary>
+        public object CustomData { get; internal set; }
+
+        /// <summary>
+        /// The time this task will run.
+        /// </summary>
+        public DateTime? RunTime { get; internal set; }
+
+        /// <summary>
+        /// The <see cref="CancellationTokenSource"/> to prematurely dequeue this task.
+        /// </summary>
+        internal CancellationTokenSource? TokenSource { get; set; } = new();
+
+        /// <summary>
+        /// Delete this task.
+        /// </summary>
+        public void Delete() =>
+            UniversalExtensions.DeleteScheduledTask(Uid);
     }
+}
+
+public class HumanReadableTimeFormatConfig
+{
+    /// <summary>
+    /// The string used for days.
+    /// Defaults to: "days".
+    /// </summary>
+    public string DaysString { get; set; } = "days";
+
+    /// <summary>
+    /// The string used for hours.
+    /// Defaults to: "hours".
+    /// </summary>
+    public string HoursString { get; set; } = "hours";
+
+    /// <summary>
+    /// The string used for minutes.
+    /// Defaults to: "minutes".
+    /// </summary>
+    public string MinutesString { get; set; } = "minutes";
+
+    /// <summary>
+    /// The string used for seconds.
+    /// Defaults to: "seconds".
+    /// </summary>
+    public string SecondsString { get; set; } = "seconds";
 }
