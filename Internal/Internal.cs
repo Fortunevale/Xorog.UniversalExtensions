@@ -98,7 +98,7 @@ public class InternalSheduler
         /// <summary>
         /// The custom data asscociated with this task.
         /// </summary>
-        public object CustomData { get; internal set; }
+        public object? CustomData { get; internal set; }
 
         /// <summary>
         /// The time this task will run.
