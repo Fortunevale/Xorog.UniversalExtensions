@@ -7,8 +7,8 @@ global using System.Text;
 global using System.Threading.Tasks;
 global using System.Drawing;
 global using Microsoft.Extensions.Logging;
+global using Xorog.UniversalExtensions.Enums;
 
-global using static Xorog.UniversalExtensions.UniversalExtensionsEnums;
 global using static Xorog.UniversalExtensions.Internal;
 global using static Xorog.UniversalExtensions.InternalSheduler;
 global using static Xorog.UniversalExtensions.Log;

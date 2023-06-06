@@ -1,7 +1,42 @@
-﻿namespace Xorog.UniversalExtensions;
+﻿using System.Reflection;
+
+namespace Xorog.UniversalExtensions;
 
 public static class UniversalExtensions
 {
+    public static void LoadAllReferencedAssemblies(AppDomain domain)
+    {
+        _logger?.LogDebug("Loading all assemblies..");
+
+        var assemblyCount = 0;
+        foreach (Assembly assembly in domain.GetAssemblies())
+        {
+            LoadReferencedAssembly(assembly);
+        }
+
+        void LoadReferencedAssembly(Assembly assembly)
+        {
+            try
+            {
+                foreach (AssemblyName name in assembly.GetReferencedAssemblies())
+                {
+                    if (!AppDomain.CurrentDomain.GetAssemblies().Any(a => a.FullName == name.FullName))
+                    {
+                        assemblyCount++;
+                        _logger?.LogDebug("Loading {Name}..", name.Name);
+                        LoadReferencedAssembly(Assembly.Load(name));
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError("Failed to load an assembly", ex);
+            }
+        }
+
+        _logger?.LogInformation("Loaded {assemblyCount} assemblies.", assemblyCount);
+    }
+
     /// <summary>
     /// Attaches a logger to UniversalExtensions. Used for Debug purposes.
     /// </summary>
