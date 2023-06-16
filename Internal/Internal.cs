@@ -114,7 +114,7 @@ public class InternalSheduler
         /// Delete this task.
         /// </summary>
         public void Delete() =>
-            UniversalExtensions.DeleteScheduledTask(Uid);
+            ScheduledTaskExtensions.DeleteScheduledTask(Uid);
     }
 }
 

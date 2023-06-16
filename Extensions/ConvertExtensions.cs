@@ -1,4 +1,4 @@
-﻿namespace Xorog.UniversalExtensions;
+﻿namespace Xorog.UniversalExtensions.Converters;
 
 public static class ConvertExtensions
 {
