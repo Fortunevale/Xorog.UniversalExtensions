@@ -11,7 +11,7 @@ public static class ScheduledTaskExtensions
 
     public static string CreateScheduledTask(this Task task, DateTime runTime, object? customData = null)
     {
-        if (task.Status != TaskStatus.WaitingForActivation)
+        if (task.Status != TaskStatus.Created)
             throw new InvalidOperationException("The task is already being executed or has been scheduled for execution.")
                 .AttachData("Task", task)
                 .AttachData("RunTime", runTime)
