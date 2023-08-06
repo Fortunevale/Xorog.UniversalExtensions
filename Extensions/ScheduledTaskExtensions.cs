@@ -1,52 +1,61 @@
-﻿namespace Xorog.UniversalExtensions;
+﻿using Xorog.UniversalExtensions.Entities;
+using Xorog.UniversalExtensions.EventArgs;
+
+namespace Xorog.UniversalExtensions;
 public static class ScheduledTaskExtensions
 {
     /// <summary>
+    /// Fired when a log message has been sent.
+    /// </summary>
+    public static event EventHandler<ScheduledTaskStartedEventArgs>? TaskStarted;
+
+    /// <summary>
     /// Create a scheduled task
     /// </summary>
-    /// <param name="task">The task to run</param>
+    /// <param name="taskFunc">The task to run</param>
     /// <param name="runTime">The time to run the task</param>
     /// <param name="customData">Any custom data you wish to provide.</param>
     /// <returns>An unique identifier of the task</returns>
 
-    public static string CreateScheduledTask(this Task task, DateTime runTime, object? customData = null)
+    public static string CreateScheduledTask(this Func<Task> taskFunc, DateTime runTime, object? customData = null)
     {
-        if (task.Status != TaskStatus.Created)
-            throw new InvalidOperationException("The task is already being executed or has been scheduled for execution.")
-                .AttachData("Task", task)
-                .AttachData("RunTime", runTime)
-                .AttachData("CustomData", customData);
-
         string UID = Guid.NewGuid().ToString();
         CancellationTokenSource CancellationToken = new CancellationTokenSource();
 
         if (Math.Ceiling(runTime.GetTimespanUntil().TotalMilliseconds) < 0)
             runTime = DateTime.UtcNow.AddSeconds(1);
 
+        var scheduledTask = new ScheduledTask
+        {
+            Uid = UID,
+            RunTime = runTime,
+            TokenSource = CancellationToken,
+            CustomData = customData,
+        };
+
         _ = LongDelay(runTime.GetTimespanUntil(), CancellationToken).ContinueWith(x =>
         {
-            lock (RegisteredScheduledTasks)
+            lock (InternalScheduler.RegisteredScheduledTasks)
             {
-                RegisteredScheduledTasks.Remove(UID);
+                InternalScheduler.RegisteredScheduledTasks.Remove(UID);
             }
 
             _logger?.LogDebug("Running scheduled task with UID '{UID}'", UID, runTime.GetTimespanUntil().GetHumanReadable());
 
             if (x.IsCompletedSuccessfully)
-                task.Start();
+            {
+                var task = Task.Run(taskFunc);
+                _ = Task.Run(() =>
+                {
+                    ScheduledTaskExtensions.TaskStarted?.Invoke(null, new ScheduledTaskStartedEventArgs(scheduledTask, task));
+                });
+            }
         });
 
-        lock (RegisteredScheduledTasks)
+        lock (InternalScheduler.RegisteredScheduledTasks)
         {
             _logger?.LogDebug("Creating scheduled task with UID '{UID}' running in {RunTime}", UID, runTime.GetTimespanUntil().GetHumanReadable());
-
-            RegisteredScheduledTasks.Add(UID, new ScheduledTask
-            {
-                Uid = UID,
-                RunTime = runTime,
-                TokenSource = CancellationToken,
-                CustomData = customData,
-            });
+            InternalScheduler.RegisteredScheduledTasks.Add(UID, scheduledTask);
         }
         return UID;
     }
@@ -60,18 +69,18 @@ public static class ScheduledTaskExtensions
     /// <exception cref="KeyNotFoundException">Throws if the task hasn't been found or if an internal error occurred</exception>
     public static void DeleteScheduledTask(string UID)
     {
-        if (!RegisteredScheduledTasks.ContainsKey(UID))
+        if (!InternalScheduler.RegisteredScheduledTasks.ContainsKey(UID))
             throw new KeyNotFoundException($"No scheduled task has been found with UID '{UID}'");
 
-        if (RegisteredScheduledTasks[UID].TokenSource is null)
+        if (InternalScheduler.RegisteredScheduledTasks[UID].TokenSource is null)
             throw new Exception($"Internal: There is no token source registered the specified task.");
 
         _logger?.LogDebug("Deleting scheduled task with UID '{UID}'", UID);
 
-        lock (RegisteredScheduledTasks)
+        lock (InternalScheduler.RegisteredScheduledTasks)
         {
-            RegisteredScheduledTasks[UID].TokenSource?.Cancel();
-            RegisteredScheduledTasks.Remove(UID);
+            InternalScheduler.RegisteredScheduledTasks[UID].TokenSource?.Cancel();
+            InternalScheduler.RegisteredScheduledTasks.Remove(UID);
         }
         return;
     }
@@ -83,7 +92,7 @@ public static class ScheduledTaskExtensions
     /// </summary>
     /// <returns>A list of all registered tasks</returns>
     public static IReadOnlyList<ScheduledTask>? GetScheduledTasks()
-        => RegisteredScheduledTasks.Select(x => x.Value).ToList().AsReadOnly();
+        => InternalScheduler.RegisteredScheduledTasks.Select(x => x.Value).ToList().AsReadOnly();
 
     /// <summary>
     /// Gets a specific task
@@ -92,7 +101,7 @@ public static class ScheduledTaskExtensions
     /// <returns>The task</returns>
     /// <exception cref="Exception">Throws if the task has not been found</exception>
     public static ScheduledTask GetScheduledTask(string UID)
-        => RegisteredScheduledTasks[UID];
+        => InternalScheduler.RegisteredScheduledTasks[UID];
 
     internal static async Task LongDelay(TimeSpan delay, CancellationTokenSource token)
     {
