@@ -72,7 +72,7 @@ public static class TimeExtensions
     /// <param name="seconds"></param>
     /// <param name="timeFormat"></param>
     /// <returns></returns>
-    public static string GetShortHumanReadable(this int seconds, TimeFormat timeFormat = TimeFormat.DAYS) =>
+    public static string GetShortHumanReadable(this int seconds, TimeFormat timeFormat = TimeFormat.Days) =>
         TimeSpan.FromSeconds(seconds).GetShortTimeFormat(timeFormat);
 
     /// <summary>
@@ -81,7 +81,7 @@ public static class TimeExtensions
     /// <param name="seconds"></param>
     /// <param name="timeFormat"></param>
     /// <returns></returns>
-    public static string GetShortHumanReadable(this long seconds, TimeFormat timeFormat = TimeFormat.DAYS) =>
+    public static string GetShortHumanReadable(this long seconds, TimeFormat timeFormat = TimeFormat.Days) =>
         TimeSpan.FromSeconds(seconds).GetShortTimeFormat(timeFormat);
 
     /// <summary>
@@ -90,7 +90,7 @@ public static class TimeExtensions
     /// <param name="timespan"></param>
     /// <param name="timeFormat"></param>
     /// <returns></returns>
-    public static string GetShortHumanReadable(this TimeSpan timespan, TimeFormat timeFormat = TimeFormat.DAYS) =>
+    public static string GetShortHumanReadable(this TimeSpan timespan, TimeFormat timeFormat = TimeFormat.Days) =>
         timespan.GetShortTimeFormat(timeFormat);
 
     /// <summary>
@@ -99,14 +99,14 @@ public static class TimeExtensions
     /// <param name="seconds"></param>
     /// <param name="timeFormat"></param>
     /// <returns></returns>
-    public static string GetHumanReadable(this int seconds, TimeFormat timeFormat = TimeFormat.DAYS, HumanReadableTimeFormatConfig? config = null) =>
+    public static string GetHumanReadable(this int seconds, TimeFormat timeFormat = TimeFormat.Days, HumanReadableTimeFormatConfig? config = null) =>
         TimeSpan.FromSeconds(seconds).GetTimeFormat(timeFormat, config);
 
     /// <inheritdoc cref="UniversalExtensions.GetHumanReadable(int, TimeFormat)"/>
-    public static string GetHumanReadable(this long seconds, TimeFormat timeFormat = TimeFormat.DAYS, HumanReadableTimeFormatConfig? config = null) =>
+    public static string GetHumanReadable(this long seconds, TimeFormat timeFormat = TimeFormat.Days, HumanReadableTimeFormatConfig? config = null) =>
         TimeSpan.FromSeconds(seconds).GetTimeFormat(timeFormat, config);
 
     /// <inheritdoc cref="UniversalExtensions.GetHumanReadable(int, TimeFormat)"/>
-    public static string GetHumanReadable(this TimeSpan timeSpan, TimeFormat timeFormat = TimeFormat.DAYS, HumanReadableTimeFormatConfig? config = null) =>
+    public static string GetHumanReadable(this TimeSpan timeSpan, TimeFormat timeFormat = TimeFormat.Days, HumanReadableTimeFormatConfig? config = null) =>
         timeSpan.GetTimeFormat(timeFormat, config);
 }

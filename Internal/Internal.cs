@@ -8,7 +8,7 @@ internal static class Internal
     {
         switch (timeFormat)
         {
-            case TimeFormat.DAYS:
+            case TimeFormat.Days:
                 if (_timespan.TotalDays >= 1)
                     return $"{Math.Floor(_timespan.TotalDays).ToString().PadLeft(2, '0')}:{_timespan.Hours.ToString().PadLeft(2, '0')}:{_timespan.Minutes.ToString().PadLeft(2, '0')}:{_timespan.Seconds.ToString().PadLeft(2, '0')}";
 
@@ -17,7 +17,7 @@ internal static class Internal
 
                 return $"{_timespan.Minutes.ToString().PadLeft(2, '0')}:{_timespan.Seconds.ToString().PadLeft(2, '0')}";
 
-            case TimeFormat.HOURS:
+            case TimeFormat.Hours:
                 if (_timespan.TotalDays >= 1)
                     return $"{Math.Floor(_timespan.TotalHours).ToString().PadLeft(2, '0')}:" +
                         $"{_timespan.Minutes.ToString().PadLeft(2, '0')}:{_timespan.Seconds.ToString().PadLeft(2, '0')}";
@@ -28,7 +28,7 @@ internal static class Internal
 
                 return $"{_timespan.Minutes.ToString().PadLeft(2, '0')}:{_timespan.Seconds.ToString().PadLeft(2, '0')}";
 
-            case TimeFormat.MINUTES:
+            case TimeFormat.Minutes:
                 if (_timespan.TotalHours >= 1)
                     return $"{Math.Floor(_timespan.TotalMinutes).ToString().PadLeft(2, '0')}:{_timespan.Seconds.ToString().PadLeft(2, '0')}";
 
@@ -42,30 +42,37 @@ internal static class Internal
     {
         config ??= new();
 
+        string returningString = string.Empty;
+        Dictionary<string, bool> humanReadable = new();
+
         switch (timeFormat)
         {
-            case TimeFormat.DAYS:
-                if (_timespan.TotalDays >= 1)
-                    return $"{Math.Floor(_timespan.TotalDays)} {config.DaysString}, {_timespan.Hours} {config.HoursString}";
+            case TimeFormat.Days:
+            {
+                humanReadable.Add($"{Math.Floor(_timespan.TotalDays)} {config.DaysString}", _timespan.TotalDays >= 1);
+                humanReadable.Add($"{_timespan.Hours} {config.HoursString}", _timespan.TotalHours >= 1);
+                humanReadable.Add($"{_timespan.Minutes} {config.MinutesString}", (config.MustIncludeMinutes && _timespan.TotalMinutes >= 1) || (_timespan.TotalMinutes >= 1 && _timespan.TotalDays < 1));
+                humanReadable.Add($"{_timespan.Seconds} {config.SecondsString}", config.MustIncludeSeconds || _timespan.TotalHours < 1);
 
-                if (_timespan.TotalHours >= 1)
-                    return $"{_timespan.Hours} {config.HoursString}, {_timespan.Minutes} {config.MinutesString}";
+                return string.Join(", ", humanReadable.Where(x => x.Value).Select(x => x.Key));
+            }
 
-                return $"{_timespan.Minutes} {config.MinutesString}, {_timespan.Seconds} {config.SecondsString}";
+            case TimeFormat.Hours:
+            {
+                humanReadable.Add($"{Math.Floor(_timespan.TotalHours)} {config.HoursString}", _timespan.TotalHours >= 1);
+                humanReadable.Add($"{_timespan.Minutes} {config.MinutesString}", (config.MustIncludeMinutes && _timespan.TotalMinutes >= 1) || _timespan.TotalHours >= 1);
+                humanReadable.Add($"{_timespan.Seconds} {config.SecondsString}", config.MustIncludeSeconds || _timespan.TotalHours < 1);
 
-            case TimeFormat.HOURS:
-                if (_timespan.TotalDays >= 1)
-                    return $"{Math.Floor(_timespan.TotalHours)} {config.HoursString}, {_timespan.Minutes} {config.MinutesString}";
+                return string.Join(", ", humanReadable.Where(x => x.Value).Select(x => x.Key));
+            }
 
-                if (_timespan.TotalHours >= 1)
-                    return $"{_timespan.Hours} {config.HoursString}, {_timespan.Minutes} {config.MinutesString}";
+            case TimeFormat.Minutes:
+            {
+                humanReadable.Add($"{Math.Floor(_timespan.TotalMinutes)} {config.MinutesString}", (config.MustIncludeMinutes && _timespan.TotalMinutes >= 1) || _timespan.TotalMinutes >= 1);
+                humanReadable.Add($"{_timespan.Seconds} {config.SecondsString}", true);
 
-                return $"{_timespan.Minutes} {config.MinutesString}, {_timespan.Seconds} {config.SecondsString}";
-
-            case TimeFormat.MINUTES:
-                if (_timespan.TotalHours >= 1)
-                    return $"{Math.Floor(_timespan.TotalMinutes)} {config.MinutesString}, {_timespan.Seconds} {config.SecondsString}";
-                return $"{_timespan.Minutes} {config.MinutesString}, {_timespan.Seconds} {config.MinutesString}";
+                return string.Join(", ", humanReadable.Where(x => x.Value).Select(x => x.Key));
+            }
 
             default:
                 return _timespan.ToString();
@@ -111,4 +118,16 @@ public class HumanReadableTimeFormatConfig
     /// Defaults to: "seconds".
     /// </summary>
     public string SecondsString { get; set; } = "seconds";
+
+    /// <summary>
+    /// Must include minutes if timestamp is >= 1 day.
+    /// Defaults to: false.
+    /// </summary>
+    public bool MustIncludeMinutes { get; set; } = false;
+
+    /// <summary>
+    /// Must include seconds if timestamp is >= 1 hour.
+    /// Defaults to: false.
+    /// </summary>
+    public bool MustIncludeSeconds { get; set; } = false;
 }
