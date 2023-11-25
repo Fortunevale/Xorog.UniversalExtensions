@@ -51,6 +51,39 @@ public static class UniversalExtensions
         _logger?.LogInformation("Loaded {assemblyCount} assemblies.", assemblyCount);
     }
 
+    public static void LoadAllReferencedAssemblies(params AssemblyName[] assemblies)
+    {
+        _logger?.LogDebug("Loading all assemblies..");
+
+        var assemblyCount = 0;
+        foreach (AssemblyName assembly in assemblies)
+        {
+            LoadReferencedAssembly(Assembly.Load(assembly));
+        }
+
+        void LoadReferencedAssembly(Assembly assembly)
+        {
+            try
+            {
+                foreach (AssemblyName name in assembly.GetReferencedAssemblies())
+                {
+                    if (!AppDomain.CurrentDomain.GetAssemblies().Any(a => a.FullName == name.FullName))
+                    {
+                        assemblyCount++;
+                        _logger?.LogDebug("Loading {Name}..", name.Name);
+                        LoadReferencedAssembly(Assembly.Load(name));
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError("Failed to load an assembly", ex);
+            }
+        }
+
+        _logger?.LogInformation("Loaded {assemblyCount} assemblies.", assemblyCount);
+    }
+
     /// <summary>
     /// Adds additional data to an exception.
     /// </summary>
