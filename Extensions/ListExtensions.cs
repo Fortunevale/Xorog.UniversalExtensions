@@ -37,4 +37,8 @@ public static class ListExtensions
     /// <returns>Whether the list contains elements and is not null</returns>
     public static bool IsNotNullAndNotEmpty<T>(this IEnumerable<T>? obj)
         => obj is not null && obj.Any();
+
+    /// <inheritdoc cref="ListExtensions.IsNotNullAndNotEmpty{T}(IEnumerable{T}?)"/>
+    public static bool IsNotNullAndNotEmpty<T>(this T[]? obj)
+    => obj is not null && obj.Any();
 }
