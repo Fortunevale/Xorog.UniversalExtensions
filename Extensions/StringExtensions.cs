@@ -7,7 +7,7 @@ public static class StringExtensions
     /// </summary>
     /// <param name="str"></param>
     /// <returns>Whether the string is null, empty or only contains whitespaces</returns>
-    public static bool IsNullOrWhiteSpace(this string str)
+    public static bool IsNullOrWhiteSpace(this string? str)
         => string.IsNullOrWhiteSpace(str);
 
     /// <summary>
@@ -15,7 +15,7 @@ public static class StringExtensions
     /// </summary>
     /// <param name="str"></param>
     /// <returns>Whether the string is null or empty</returns>
-    public static bool IsNullOrEmpty(this string str)
+    public static bool IsNullOrEmpty(this string? str)
         => string.IsNullOrEmpty(str);
 
     /// <summary>
