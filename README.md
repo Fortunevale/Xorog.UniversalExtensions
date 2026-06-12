@@ -1,3 +1,6 @@
+# This repository has moved! You can now find it [here](https://git.fortunevale.de/Fortunevale).
+<hr>
+
 # Xorog.UniversalExtensions
 
 A small set of Utilities, Extensions and similar used in projects of Fortunevale.
